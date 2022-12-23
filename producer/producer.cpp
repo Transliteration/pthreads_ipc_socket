@@ -3,6 +3,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include "Producer.hpp"
+
 
 // Должна состоять из двух потоков и одного общего буфера. 
 // Поток 1.  Принимает строку, которую введет пользователь.   
@@ -12,10 +14,6 @@
 
 // xxx
 
-// Поток 2. Должен обрабатывать данные, которые помещаются в общий буфер. После получения данных общий буфер затирается. 
-// Поток должен вывести полученные данные на экран, рассчитать  общую  сумму всех  элементов, которые являются численными значениями.  
-// Полученную сумму передать в Программу №2. После этого поток ожидает следующие данные.
-
 // Примечание №1 по Программе №1: Взаимодействие потоков должно быть синхронизировано,  поток №2  не должен постоянно опрашивать общий буфер. 
 // Механизм синхронизации не должен быть глобальной переменной.
 
@@ -23,86 +21,86 @@
 // Это значит, что внезапный останов программы №2 не должен приводить к немедленным проблемам ввода у пользователя.
 // При перезапуске программы №2 необходимо произвести передподключение.
 
-class Producer
+Producer::Producer(std::string &buffer)
+: buffer(buffer)
+, should_stop(false)
+{}
+
+void Producer::run()
 {
-	std::string &buffer;
-	bool should_stop;
+	std::string user_input;
 
-public:
-	Producer(std::string &buffer)
-	: buffer(buffer)
-	, should_stop(false)
-	{}
-
-	void run()
+	while(!should_stop)
 	{
-		std::string user_input;
+		std::cout << "Producer: Input your string: ";
+		std::getline(std::cin, user_input);
 
-		while(!should_stop)
+		if (checkInput(user_input))
 		{
-			std::cout << "Input your string: ";
-			std::getline(std::cin, user_input);
+			// aquire lock
+			// lock();
+			std::cout << "Producer: Lock aquired!" << std::endl;
 
-			if (checkInput(user_input))
-			{
-				// aquire lock
-				std::cout << "Lock aquired!" << std::endl;
+			std::cout << "Producer: Buffer content: " << buffer << std::endl;
+			buffer = transformInput(std::move(user_input));
+			std::cout << "Producer: Transformed buffer content: " << buffer << std::endl;
 
-				std::cout << "Buffer content: " << buffer << std::endl;
-				buffer = transformInput(std::move(user_input));
-				std::cout << "Transformed buffer content: " << buffer << std::endl;
-
-				// inform thread 2 to consume
-				std::cout << "Thread 2 informed!" << std::endl;
-				// release lock
-				std::cout << "Lock released!" << std::endl;
-			}
+			// inform thread 2 to consume
+			std::cout << "Producer: Thread 2 informed!" << std::endl;
+			// release lock
+			// unlock();
+			std::cout << "Producer: Lock released!" << std::endl;
 		}
 	}
+}
 
-	bool checkInput(const std::string &inputStr)
+bool Producer::checkInput(const std::string &inputStr)
+{
+	bool containsOnlyDigits = inputStr.find_first_not_of("0123456789") == std::string::npos;
+	bool lengthCheck = inputStr.length() <= 64;
+
+	if (!containsOnlyDigits)
 	{
-		bool containsOnlyDigits = inputStr.find_first_not_of("0123456789") == std::string::npos;
-		bool lengthCheck = inputStr.length() <= 64;
-
-		if (!containsOnlyDigits)
-		{
-			std::cout << "Your input does not consist entirely of numbers!" << std::endl;
-		}
-
-		if (!lengthCheck)
-		{
-			std::cout << "Your input string contains more then 64 symbols!" << std::endl;    
-		}
-		
-
-		return containsOnlyDigits && lengthCheck;
+		std::cout << "Producer: Your input does not consist entirely of numbers!" << std::endl;
 	}
 
-	std::string transformInput(std::string &&inputStr)
+	if (!lengthCheck)
 	{
-		std::stringstream transformedInput;
+		std::cout << "Producer: Your input string contains more then 64 symbols!" << std::endl;    
+	}
+	
 
-		std::sort(std::begin(inputStr), std::end(inputStr), [](const char a, const char b){
+	return containsOnlyDigits && lengthCheck;
+}
+
+std::string Producer::transformInput(std::string &&inputStr)
+{
+	std::stringstream transformedInput;
+
+	std::sort(
+		std::begin(inputStr), 
+		std::end(inputStr), 
+		[](const char a, const char b)
+		{
 			return a > b;
-		});  
-
-
-		for (auto &ch : inputStr)
-		{
-			if ((ch - '0') % 2 == 0)
-			{
-				transformedInput << "KB";
-			}
-			else
-			{
-				transformedInput << ch;
-			}
 		}
+	);  
 
-		return transformedInput.str();
+	for (auto &ch : inputStr)
+	{
+		if ((ch - '0') % 2 == 0)
+		{
+			transformedInput << "KB";
+		}
+		else
+		{
+			transformedInput << ch;
+		}
 	}
-};
+
+	return transformedInput.str();
+}
+
 
 
 int main()
