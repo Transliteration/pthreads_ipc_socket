@@ -34,14 +34,5 @@ int main()
 	delete producer;
 	delete consumer;
 
-	// auto producer = std::make_unique<Producer>(buffer);
-	// auto consumer = std::make_unique<Consumer>(buffer);
-
-	// std::jthread thread_producer(&Producer::run, std::move(producer));
-	// std::jthread thread_consumer(&Consumer::run, std::move(consumer));
-
-	// thread_producer.join();
-	// thread_consumer.join();
-
 	return 0;
 }
