@@ -1,4 +1,5 @@
 #include <string>
+#include <queue>
 #include "../buffer/buffer.hpp"
 #include "../runnable/runnable.hpp"
 
@@ -11,7 +12,9 @@ public:
 
     void run();
 
+    bool connectToServerAndSendData(const std::string &data);
+
 private:
     Buffer &buffer;
-    bool should_stop;
+    std::queue<std::string> unsent_messages;
 };
