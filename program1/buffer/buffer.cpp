@@ -1,5 +1,4 @@
 #include "buffer.hpp"
-#include <iostream>
 
 Buffer::Buffer()
     : readyToConsume(false)

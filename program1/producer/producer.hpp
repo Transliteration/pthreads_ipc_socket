@@ -13,5 +13,4 @@ public:
 
 private:
 	Buffer &buffer;
-	bool should_stop;
 };
