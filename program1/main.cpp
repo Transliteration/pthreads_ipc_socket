@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <string>
 
 #include "producer/producer.hpp"
 #include "consumer/consumer.hpp"
@@ -14,7 +13,8 @@ void *startRunnable(void *data)
 		runnable->run();
 	}
 
-	return nullptr;
+	// unreachable
+	pthread_exit(nullptr);
 }
 
 int main()
@@ -31,8 +31,9 @@ int main()
 	pthread_join(thread_producer, nullptr);
 	pthread_join(thread_consumer, nullptr);
 
+	// unreachable
 	delete producer;
 	delete consumer;
 
-	return 0;
+	pthread_exit(nullptr);
 }

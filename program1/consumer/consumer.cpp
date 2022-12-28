@@ -2,6 +2,9 @@
 #include <iostream>
 #include <numeric>
 
+#include <unistd.h>
+#include <netdb.h>
+
 Consumer::Consumer(Buffer &buffer)
     : buffer(buffer), unsent_messages()
 {
@@ -12,9 +15,13 @@ int Consumer::calculateSum(const std::string &data)
     auto convertCharToNumber = [](const unsigned char ch)
     {
         if (std::isdigit(ch))
+        {
             return ch - '0';
+        }
         else
+        {
             return 0;
+        }
     };
 
     return std::transform_reduce(std::begin(data), std::end(data), 0, std::plus<>(), convertCharToNumber);
@@ -22,7 +29,7 @@ int Consumer::calculateSum(const std::string &data)
 
 void Consumer::run()
 {
-    while (!should_stop)
+    while (true)
     {
         buffer.lock();
         buffer.wait();

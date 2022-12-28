@@ -6,7 +6,7 @@
 #include "producer.hpp"
 
 Producer::Producer(Buffer &buffer)
-	: buffer(buffer), should_stop(false)
+	: buffer(buffer)
 {
 }
 
@@ -14,7 +14,7 @@ void Producer::run()
 {
 	std::string user_input;
 
-	while (!should_stop)
+	while (true)
 	{
 		std::cout << "Input your string:\n";
 		std::getline(std::cin, user_input);
@@ -58,7 +58,7 @@ std::string Producer::transformInput(std::string inputStr)
 
 	std::sort(std::rbegin(inputStr), std::rend(inputStr));
 
-	for (const auto &ch : inputStr)
+	for (const auto ch : inputStr)
 	{
 		if ((ch - '0') % 2 == 0)
 		{
